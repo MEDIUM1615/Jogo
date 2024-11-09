@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ataque dos Hollows!</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #1a1a3d;
+            color: #ffffff;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            margin-top: 20px;
+        }
+
+        #game-area {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            height: 400px;
+            margin: 20px auto;
+            background-color: #282850;
+            border: 2px solid #ffdf00;
+            overflow: hidden;
+            border-radius: 8px;
+        }
+
+        .hollow {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        #score, #lives {
+            font-size: 1.2em;
+            margin: 10px;
+        }
+
+        #game-over {
+            display: none;
+            font-size: 2em;
+            color: #ffdf00;
+            margin-top: 20px;
+        }
+
+        button {
+            font-size: 1em;
+            padding: 10px 20px;
+            margin-top: 10px;
+            cursor: pointer;
+            background-color: #ffdf00;
+            border: none;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Ataque dos Hollows!</h1>
+    <p id="score">Pontuação: 0</p>
+    <p id="lives">Vidas: 3</p>
+
+    <div id="game-area"></div>
+    <p id="game-over">Game Over! <br> <button onclick="startGame()">Jogar Novamente</button></p>
+
+    <script>
+        let score = 0;
+        let lives = 3;
+        let gameInterval;
+        let speed = 1500;
+
+        function createHollow(isPositive) {
+            const hollow = document.createElement("div");
+            hollow.classList.add("hollow");
+            const gameArea = document.getElementById("game-area");
+
+            // Define imagem para cada tipo de Hollow
+            if (isPositive) {
+                hollow.style.backgroundImage = "url('/path/to/positive.png')"; // Caminho da imagem positiva
+            } else {
+                hollow.style.backgroundImage = "url('/path/to/negative.png')"; // Caminho da imagem negativa
+            }
+            hollow.style.backgroundSize = "cover";
+
+            // Define posição e movimentação aleatória
+            hollow.style.left = Math.random() * (gameArea.offsetWidth - 50) + "px";
+            hollow.style.top = Math.random() * (gameArea.offsetHeight - 50) + "px";
+            moveHollow(hollow);
+
+            // Adiciona evento de clique no Hollow
+            hollow.addEventListener("click", () => {
+                if (isPositive) {
+                    score++;
+                } else {
+                    score--;
+                }
+                document.getElementById("score").textContent = `Pontuação: ${score}`;
+                gameArea.removeChild(hollow);
+
+                // Aumenta a velocidade conforme o jogador ganha pontos
+                if (score % 5 === 0) {
+                    speed = Math.max(500, speed - 100); // Reduz a velocidade até um mínimo de 500ms
+                }
+            });
+
+            // Adiciona o Hollow ao gameArea e define um tempo para removê-lo
+            gameArea.appendChild(hollow);
+            setTimeout(() => {
+                if (gameArea.contains(hollow)) {
+                    gameArea.removeChild(hollow);
+                    if (isPositive) {
+                        lives--;
+                        document.getElementById("lives").textContent = `Vidas: ${lives}`;
+                        if (lives <= 0) endGame();
+                    }
+                }
+            }, speed);
+        }
+
+        function moveHollow(hollow) {
+            const gameArea = document.getElementById("game-area");
+            setInterval(() => {
+                hollow.style.left = Math.random() * (gameArea.offsetWidth - 50) + "px";
+                hollow.style.top = Math.random() * (gameArea.offsetHeight - 50) + "px";
+            }, 500); // Muda de posição a cada 500ms
+        }
+
+        function startGame() {
+            score = 0;
+            lives = 3;
+            speed = 1500;
+            document.getElementById("score").textContent = `Pontuação: ${score}`;
+            document.getElementById("lives").textContent = `Vidas: ${lives}`;
+            document.getElementById("game-over").style.display = "none";
+            document.getElementById("game-area").innerHTML = "";
+
+            gameInterval = setInterval(() => {
+                // Define a chance de aparecer um Hollow positivo ou negativo
+                const isPositive = Math.random() > 0.3; // 70% de chance de ser positivo
+                createHollow(isPositive);
+            }, speed);
+        }
+
+        function endGame() {
+            clearInterval(gameInterval);
+            document.getElementById("game-over").style.display = "block";
+        }
+
+        startGame();
+    </script>
+
+</body>
+</html>
